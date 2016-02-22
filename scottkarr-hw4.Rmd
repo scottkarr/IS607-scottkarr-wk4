@@ -1,0 +1,86 @@
+---
+title: "Regular Expressions Homework"
+author: "Scott Karr"
+date: "February 28, 2016"
+output:
+  html_document:
+    css: ./lab.css
+    highlight: pygments
+    theme: cerulean
+  pdf_document: default
+---
+######--------------------------------------------------------------
+##### AUTOMATED DATA COLLECTION WITH R
+######  CODE CHAPTER 8: REGULAR EXPRESSIONS AND ESSENTIAL STRING FUNCTIONS
+######  Problems 3,7,8,9
+######--------------------------------------------------------------
+(a) Load Packages
+```{r load-pkgs, eval=TRUE}
+library(stringr)
+library(XML)
+library(RCurl)
+library(bitops)
+library(tau)
+```
+
+(b) Problem #3  
+Copy the introductory example.  The vector name stroes the extracted names.
+```{r example, eval=TRUE}
+##start by assigning a raw data vector of one element which mixes phone and name data
+raw.data <- "555-1239Moe Szyslak(636) 555-0113Burns, C. Montgomery555-6542Rev. Timothy Lovejoy555 8904Ned Flanders636-555-3226Simpson, Homer5543642Dr. Julius Hibbert"
+```
+
+```{r extract-information, eval=TRUE}
+##extract a vector of name elements 
+name <- unlist(str_extract_all(raw.data, "[[:alpha:]., ]{2,}"))
+name
+##extract a vector of phone elements
+phone <- unlist(str_extract_all(raw.data, "\\(?(\\d{3})?\\)?(-| )?\\d{3}(-| )?\\d{4}"))
+phone <- unlist(str_extract_all(raw.data, "\\(?(\\d{3})?\\)?(-| )?\\d{3}(-| )?\\d{4}"))
+phone
+##assign elements to dataframe
+data.frame(name = name, phone = phone)
+```
+
+#####     (a) Use the tools of the chapter to rearrange the vector so that all elements conform to the standard first_name last_name.
+```{r reformat-names, eval=TRUE}
+##extract a vector of fname elements 
+fname <- unlist(str_extract_all(name, "[:punct:] [[:alpha:]]{2,}$|[[:alpha:]]{2,} "))
+fname
+fname <- unlist(str_extract_all(fname,"[[:alpha:]]{2,}"))
+fname
+##extract a vector of lname elements 
+lname <- unlist(str_extract_all(name, "[^[:punct:]] [[:alpha:]]{2,}$|[[:alpha:]]{2,}, "))
+lname <- unlist(str_extract_all(lname,"[[:alpha:]]{2,}"))
+lname
+##extract a vector of title elements 
+title <- unlist(str_extract_all(name, "[[:alpha:]]{2,}\\."))
+title
+title_exists <- unlist(str_detect(name, title))
+title_exists
+##update the name dataframe
+data.frame(fname=fname, lname=lname, title_exists=title_exists)
+fname2 <- unlist(str_extract_all(name, " [[:alpha:]]{1}\\.? [[:alpha:]]{1,}\\.?"))
+fname2 <- unlist(str_extract_all(fname2,"[[:alpha:]]{1}\\.? [[:alpha:]]{1,}\\.?"))
+fname2
+fname2_exists <- unlist(str_detect(name, " [[:alpha:]]{1}\\.? [[:alpha:]]{1,}\\.?"))
+fname2_exists
+data.frame(fname=fname, lname=lname, phone=phone, title_exists=title_exists, fname2_exists=fname2_exists)
+```
+(c) Problem #7
+The expression "<.+>" doesn't repeat the alpha characters contained in the tag 
+```{r html,eval=TRUE}
+raw.data <- "<title>+++BREAKING NEWS+++</title>"
+html <- str_extract(raw.data,"<[[:alpha:]]{1,}>")
+html
+```
+
+(d) Problem #8
+The expression [^1-9=+*()] is replaced with "[^[1-9]{1,}]" which captures =+*()
+```{r binomial,eval=TRUE}
+raw.data <- "(5-3)^2=5^2-2*5*3+3^2"
+binomial <- unlist(str_extract_all(raw.data, "[^[1-9]{1,}]"))
+binomial
+```
+
+
